@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>영웅문4 조건검색 AI 질문 시연</title>
+  <style>
+    :root {
+      --navy: #102b58;
+      --navy-2: #0a2147;
+      --pink: #ec008c;
+      --pink-dark: #c60077;
+      --blue: #2f6fe4;
+      --green: #00a67d;
+      --ink: #172033;
+      --muted: #64748b;
+      --line: #d9e1ec;
+      --surface: #ffffff;
+      --soft: #f4f7fb;
+      --shadow: 0 22px 70px rgba(7, 24, 55, .22);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      background:
+        radial-gradient(circle at 75% -20%, rgba(236, 0, 140, .18), transparent 34rem),
+        linear-gradient(140deg, #081a38, #132f5c 58%, #07172f);
+      overflow-x: hidden;
+    }
+
+    button, textarea, input { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, textarea:focus-visible, input:focus-visible {
+      outline: 3px solid rgba(47, 111, 228, .35);
+      outline-offset: 2px;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .demo-header {
+      height: 64px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      color: #fff;
+      background: rgba(7, 24, 55, .82);
+      border-bottom: 1px solid rgba(255, 255, 255, .14);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 20px;
+      background: var(--pink);
+      border-radius: 11px 11px 11px 3px;
+      box-shadow: 0 8px 22px rgba(236, 0, 140, .35);
+    }
+    .brand-copy { min-width: 0; }
+    .brand-copy strong { display: block; font-size: 16px; letter-spacing: -.3px; }
+    .brand-copy span { display: block; margin-top: 2px; font-size: 11px; color: #b9c7dc; }
+
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .quiet-button {
+      min-height: 36px;
+      padding: 0 13px;
+      color: #d7e3f4;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 8px;
+    }
+    .quiet-button:hover { background: rgba(255,255,255,.08); }
+
+    .stage {
+      position: relative;
+      min-height: 0;
+      padding: 28px;
+      display: grid;
+      place-items: center;
+    }
+
+    .hts-window {
+      position: relative;
+      width: min(1120px, calc(100vw - 56px));
+      aspect-ratio: 824 / 640;
+      max-height: calc(100vh - 120px);
+      background: #dfe4ea;
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: width .35s ease, transform .35s ease;
+    }
+
+    .hts-titlebar {
+      height: 40px;
+      padding: 0 10px 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+      background: linear-gradient(#4869a3, #34598f);
+      border-bottom: 1px solid #233e6c;
+    }
+    .screen-title { font-size: 14px; letter-spacing: -.2px; }
+    .title-tools { display: flex; align-items: center; gap: 8px; }
+    .ask-button {
+      height: 30px;
+      padding: 0 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      background: linear-gradient(180deg, #f4169d, var(--pink));
+      border: 1px solid rgba(255,255,255,.75);
+      border-radius: 5px;
+      box-shadow: 0 3px 9px rgba(91, 0, 52, .3);
+    }
+    .ask-button:hover { background: var(--pink-dark); transform: translateY(-1px); }
+    .window-icons { color: #dbe6f7; font-size: 13px; letter-spacing: 4px; user-select: none; }
+
+    .screen-wrap {
+      position: absolute;
+      inset: 40px 0 0;
+      background: #ddd;
+    }
+    .screen-wrap img { width: 100%; height: 100%; object-fit: fill; display: block; }
+
+    .saved-condition-list {
+      position: absolute;
+      left: 1.5%;
+      top: 32%;
+      width: 27.5%;
+      display: grid;
+      gap: 4px;
+    }
+    .saved-condition {
+      position: relative;
+      min-height: 30px;
+      padding: 6px 8px 6px 26px;
+      display: flex;
+      align-items: center;
+      color: #17385f;
+      font-size: clamp(10px, 1.15vw, 14px);
+      font-weight: 700;
+      background: linear-gradient(90deg, rgba(255, 238, 248, .98), rgba(255,255,255,.96));
+      border: 1px solid #f1a6d3;
+      border-radius: 2px;
+      box-shadow: 0 3px 10px rgba(16,43,88,.16);
+    }
+    .saved-condition::before {
+      content: "✓";
+      position: absolute;
+      left: 8px;
+      color: var(--pink);
+      font-weight: 900;
+    }
+    .saved-condition { animation: saved-pop .38s ease both; }
+
+    .screen-hint {
+      position: absolute;
+      right: 15px;
+      top: 52px;
+      padding: 8px 11px;
+      color: #fff;
+      font-size: 12px;
+      background: rgba(10, 33, 71, .9);
+      border-radius: 7px;
+      box-shadow: 0 8px 20px rgba(7, 24, 55, .24);
+      pointer-events: none;
+    }
+    .screen-hint::before {
+      content: "";
+      position: absolute;
+      right: 25px;
+      top: -6px;
+      border-width: 0 6px 6px;
+      border-style: solid;
+      border-color: transparent transparent rgba(10,33,71,.9);
+    }
+
+    .assistant-panel {
+      position: fixed;
+      z-index: 20;
+      top: 64px;
+      right: 0;
+      bottom: 0;
+      width: min(510px, 44vw);
+      display: flex;
+      flex-direction: column;
+      background: #f7f9fc;
+      border-left: 1px solid #c8d3e2;
+      box-shadow: -22px 0 55px rgba(7, 24, 55, .22);
+      transform: translateX(104%);
+      visibility: hidden;
+      transition: transform .35s cubic-bezier(.2,.8,.2,1), visibility .35s;
+    }
+    .assistant-panel.is-open { transform: translateX(0); visibility: visible; }
+    body.panel-open .hts-window { transform: translateX(min(-17vw, -150px)) scale(.93); }
+
+    .panel-head {
+      min-height: 72px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+      background: linear-gradient(120deg, var(--navy-2), var(--navy));
+    }
+    .panel-title { display: flex; align-items: center; gap: 11px; }
+    .ai-dot {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      background: var(--pink);
+      border-radius: 50%;
+    }
+    .panel-title strong { display: block; font-size: 16px; }
+    .panel-title small { display: block; margin-top: 2px; color: #b9c7dc; }
+    .icon-button {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      color: inherit;
+      font-size: 23px;
+      line-height: 1;
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+    }
+    .icon-button:hover { background: rgba(255,255,255,.1); }
+
+    .panel-body { flex: 1; min-height: 0; overflow: auto; padding: 20px; }
+    .step-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 10px;
+      color: var(--navy);
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .step-number {
+      width: 23px;
+      height: 23px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 12px;
+      background: var(--pink);
+      border-radius: 50%;
+    }
+    .question-card, .answer-card {
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(16, 43, 88, .06);
+    }
+    .example-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .example-button {
+      width: 100%;
+      padding: 10px 12px;
+      color: #8a155b;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 700;
+      background: #fff0f8;
+      border: 1px solid #f4b6d9;
+      border-radius: 8px;
+    }
+    .example-button:hover { background: #ffe3f2; }
+    .example-button.is-active {
+      color: #fff;
+      background: var(--pink);
+      border-color: var(--pink);
+      box-shadow: 0 6px 14px rgba(236,0,140,.18);
+    }
+    .question-input {
+      width: 100%;
+      min-height: 98px;
+      margin-top: 12px;
+      padding: 12px;
+      color: var(--ink);
+      line-height: 1.55;
+      resize: vertical;
+      background: #fbfcfe;
+      border: 1px solid #cdd7e5;
+      border-radius: 9px;
+    }
+    .question-input::placeholder { color: #95a1b3; }
+
+    .primary-button {
+      width: 100%;
+      min-height: 44px;
+      margin-top: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #fff;
+      font-weight: 800;
+      background: linear-gradient(115deg, var(--pink), #cc087c);
+      border: 0;
+      border-radius: 9px;
+      box-shadow: 0 8px 18px rgba(236, 0, 140, .2);
+    }
+    .primary-button:hover { filter: brightness(.96); transform: translateY(-1px); }
+    .primary-button:disabled { cursor: wait; opacity: .65; transform: none; }
+
+    .loading {
+      display: none;
+      margin-top: 18px;
+      padding: 18px;
+      color: var(--navy);
+      text-align: center;
+      font-size: 13px;
+      background: #eef4ff;
+      border-radius: 12px;
+    }
+    .loading.is-visible { display: block; }
+    .loading-dots { display: inline-flex; gap: 5px; margin-left: 7px; }
+    .loading-dots i { width: 6px; height: 6px; background: var(--blue); border-radius: 50%; animation: pulse 1s infinite ease-in-out; }
+    .loading-dots i:nth-child(2) { animation-delay: .15s; }
+    .loading-dots i:nth-child(3) { animation-delay: .3s; }
+
+    .manual-review-card {
+      padding: 16px;
+      background: #fffdf8;
+      border: 1px solid #efd7a7;
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(80, 55, 10, .08);
+    }
+    .review-alert {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      color: #7a4800;
+      background: #fff2cf;
+      border: 1px solid #efc665;
+      border-radius: 10px;
+    }
+    .review-alert-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 900;
+      background: #d88400;
+      border-radius: 50%;
+    }
+    .review-alert strong { display: block; font-size: 16px; }
+    .review-alert span:last-child { display: block; margin-top: 2px; font-size: 12px; }
+    .operator-message {
+      margin-top: 14px;
+      padding: 15px;
+      color: #27364b;
+      line-height: 1.75;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .operator-message p { margin: 0 0 14px; }
+    .operator-message p:last-child { margin-bottom: 0; }
+    .answer-greeting,
+    .answer-closing {
+      color: #27364b;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+    .answer-greeting {
+      margin: 0 0 14px;
+      padding-bottom: 13px;
+      border-bottom: 1px solid var(--line);
+    }
+    .explanation-box {
+      margin-top: 14px;
+      padding: 13px 14px;
+      color: #27364b;
+      background: #f7faff;
+      border: 1px solid #d7e2f0;
+      border-radius: 10px;
+    }
+    .explanation-box strong { color: var(--navy); font-size: 13px; }
+    .explanation-list { margin: 8px 0 0; padding-left: 19px; line-height: 1.65; font-size: 13px; }
+    .explanation-list li + li { margin-top: 6px; }
+    .answer-closing { margin: 15px 0 0; }
+
+    .answer-section { margin-top: 20px; }
+    .answer-section[hidden] { display: none; }
+    .answer-card { border-top: 3px solid var(--green); }
+    .confidence {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e7edf5;
+    }
+    .confidence strong { color: var(--navy); font-size: 15px; }
+    .confidence span { color: #08785d; font-size: 12px; font-weight: 800; }
+    .condition-path {
+      padding: 12px;
+      color: #123767;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.5;
+      background: #edf4ff;
+      border-left: 4px solid var(--blue);
+      border-radius: 6px;
+    }
+    .path-walkthrough {
+      margin: 14px 0;
+      padding: 12px;
+      background: #fbfcfe;
+      border: 1px solid #d7e0eb;
+      border-radius: 10px;
+    }
+    .path-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .path-progress { color: var(--navy); font-size: 12px; font-weight: 800; }
+    .path-next {
+      min-height: 30px;
+      padding: 0 11px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      background: var(--blue);
+      border: 0;
+      border-radius: 7px;
+    }
+    .path-next:disabled { opacity: .45; cursor: default; }
+    .condition-tree {
+      margin: 0;
+      padding: 7px 8px;
+      list-style: none;
+      color: #536278;
+      font-size: 12px;
+      line-height: 1.8;
+      background: #fff;
+      border: 1px solid #dfe6ef;
+      border-radius: 7px;
+    }
+    .condition-tree li { position: relative; padding-left: 22px; }
+    .condition-tree li::before { content: "▸"; position: absolute; left: 4px; color: #7b8ca3; }
+    .condition-tree li + li { margin-left: 14px; }
+    .condition-tree li.is-current {
+      color: #7b5200;
+      font-weight: 900;
+      background: #fff0a8;
+      border-radius: 3px;
+    }
+    .condition-tree li.is-current::before { content: "▾"; color: #b67a00; }
+    .path-expression {
+      margin: 10px 0 0;
+      padding: 9px 10px;
+      color: #193e70;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.55;
+      background: #edf4ff;
+      border-left: 3px solid var(--blue);
+      border-radius: 5px;
+    }
+    .combined-list { margin: 12px 0 0; padding: 0; list-style: none; }
+    .combined-list li { margin-top: 7px; padding: 9px 10px; color: #394960; font-size: 12px; line-height: 1.55; background: #f5f7fa; border-radius: 7px; }
+    .combined-list strong { color: var(--pink-dark); margin-right: 5px; }
+    .criteria-grid { margin: 14px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .criterion { padding: 10px; background: var(--soft); border-radius: 8px; }
+    .criterion span { display: block; color: var(--muted); font-size: 11px; }
+    .criterion strong { display: block; margin-top: 4px; color: var(--ink); font-size: 14px; }
+    .answer-copy { margin: 0; color: #3c485e; font-size: 13px; line-height: 1.7; }
+    .wiki-source {
+      margin-top: 14px;
+      padding: 12px;
+      color: #40516b;
+      font-size: 12px;
+      line-height: 1.6;
+      background: #fffaf0;
+      border: 1px solid #f1dfb8;
+      border-radius: 8px;
+    }
+    .wiki-source strong { color: #8c5d00; }
+    .save-button { background: linear-gradient(115deg, var(--green), #07856a); box-shadow: 0 8px 18px rgba(0,166,125,.2); }
+
+    .panel-foot {
+      padding: 12px 20px;
+      color: #6c7b90;
+      font-size: 11px;
+      text-align: center;
+      background: #eef2f7;
+      border-top: 1px solid #d9e1ec;
+    }
+
+    dialog {
+      width: min(430px, calc(100vw - 32px));
+      padding: 0;
+      color: var(--ink);
+      background: #fff;
+      border: 0;
+      border-radius: 16px;
+      box-shadow: 0 28px 90px rgba(7, 24, 55, .35);
+    }
+    dialog::backdrop { background: rgba(5, 18, 42, .56); backdrop-filter: blur(3px); }
+    .dialog-head { padding: 18px 20px 14px; border-bottom: 1px solid #e4eaf2; }
+    .dialog-head strong { color: var(--navy); font-size: 18px; }
+    .dialog-body { padding: 20px; }
+    .dialog-body label { display: block; margin-bottom: 8px; color: #4d5b70; font-size: 13px; font-weight: 800; }
+    .dialog-body input { width: 100%; height: 44px; padding: 0 12px; border: 1px solid #cbd6e4; border-radius: 8px; }
+    .dialog-copy { margin: 12px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .dialog-actions { padding: 0 20px 20px; display: flex; justify-content: flex-end; gap: 8px; }
+    .secondary-button { min-height: 40px; padding: 0 16px; color: #48566b; background: #f1f4f8; border: 1px solid #d3dce8; border-radius: 8px; }
+    .confirm-button { min-height: 40px; padding: 0 18px; color: #fff; font-weight: 800; background: var(--green); border: 0; border-radius: 8px; }
+
+    .toast {
+      position: fixed;
+      z-index: 50;
+      left: 50%;
+      bottom: 28px;
+      min-width: 300px;
+      max-width: calc(100vw - 32px);
+      padding: 13px 18px;
+      color: #fff;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 800;
+      background: #0d8064;
+      border-radius: 10px;
+      box-shadow: 0 12px 35px rgba(7, 24, 55, .28);
+      opacity: 0;
+      transform: translate(-50%, 18px);
+      pointer-events: none;
+      transition: .25s ease;
+    }
+    .toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+    .toast.is-warning { background: #a15c00; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    @keyframes pulse { 0%, 80%, 100% { opacity: .25; transform: scale(.8); } 40% { opacity: 1; transform: scale(1); } }
+    @keyframes saved-pop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 900px) {
+      .demo-header { padding: 0 14px; }
+      .brand-copy span, .window-icons { display: none; }
+      .stage { padding: 14px; align-items: start; }
+      .hts-window { width: calc(100vw - 28px); max-height: none; aspect-ratio: 824 / 640; }
+      body.panel-open .hts-window { transform: none; }
+      .assistant-panel { top: 0; width: 100vw; }
+      .panel-head { min-height: 64px; }
+      .screen-hint { font-size: 10px; }
+    }
+
+    @media (max-width: 520px) {
+      .header-actions .quiet-button { width: 42px; padding: 0; overflow: hidden; color: transparent; position: relative; }
+      .header-actions .quiet-button::after { content: "↺"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-size: 18px; }
+      .hts-titlebar { height: 42px; }
+      .screen-wrap { inset: 42px 0 0; }
+      .screen-title { font-size: 12px; }
+      .ask-button { height: 31px; padding: 0 10px; }
+      .criteria-grid { grid-template-columns: 1fr; }
+      .panel-body { padding: 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="demo-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">K</div>
+        <div class="brand-copy">
+          <strong>영웅문4 × Wiki AI</strong>
+          <span>조건검색 질문·답변·저장 시연</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="resetButton" class="quiet-button" type="button">시연 초기화</button>
+      </div>
+    </header>
+
+    <section class="stage" aria-label="영웅문4 조건검색 시연 화면">
+      <div class="hts-window">
+        <div class="hts-titlebar">
+          <span class="screen-title">[0150] 조건검색</span>
+          <div class="title-tools">
+            <button id="askButton" class="ask-button" type="button" aria-controls="assistantPanel" aria-expanded="false">
+              <span aria-hidden="true">✦</span> 질문하기
+            </button>
+            <span class="window-icons" aria-hidden="true">□ — ×</span>
+          </div>
+        </div>
+        <div class="screen-wrap">
+          <img src="영4조건검색1.jpg" alt="영웅문4 [0150] 조건검색 화면">
+          <div id="savedConditionList" class="saved-condition-list" aria-live="polite"></div>
+        </div>
+        <div id="screenHint" class="screen-hint">AI에게 조건식을 질문해 보세요</div>
+      </div>
+    </section>
+  </main>
+
+  <aside id="assistantPanel" class="assistant-panel" aria-hidden="true" aria-label="Wiki AI 질문 패널">
+    <div class="panel-head">
+      <div class="panel-title">
+        <div class="ai-dot" aria-hidden="true">AI</div>
+        <div>
+          <strong>조건검색 Wiki Assistant</strong>
+          <small>영웅문4 조건검색 전용</small>
+        </div>
+      </div>
+      <button id="closePanel" class="icon-button" type="button" aria-label="질문 패널 닫기">×</button>
+    </div>
+
+    <div class="panel-body">
+      <p class="step-label"><span class="step-number">1</span> 원하는 조건을 자연어로 질문하세요</p>
+      <div class="question-card">
+        <div class="example-actions" aria-label="예시 질문 선택">
+          <button id="example1Button" class="example-button is-active" type="button">예시 1</button>
+          <button id="example2Button" class="example-button" type="button">예시 2</button>
+          <button id="example3Button" class="example-button" type="button">예시 3</button>
+        </div>
+        <textarea id="questionInput" class="question-input" aria-label="조건검색 질문" placeholder="예: 전분기 대비 영업이익 증가율이 30% 이상인 종목"></textarea>
+        <button id="generateButton" class="primary-button" type="button">Wiki 답변 생성</button>
+      </div>
+
+      <div id="loadingState" class="loading" role="status">
+        HTS Wiki에서 조건 정의와 입력 범위를 확인하고 있습니다
+        <span class="loading-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      </div>
+
+      <section id="answerPanel" class="answer-section" hidden aria-label="Wiki 기반 답변">
+        <p class="step-label"><span class="step-number">2</span> Wiki 기반 답변</p>
+        <div class="answer-card">
+          <p id="answerGreeting" class="answer-greeting">안녕하십니까. 키움증권 운영자입니다.<br>먼저 키움증권에 관심을 가져주시고 이용해주시는 고객님께 감사 인사드립니다.</p>
+          <div class="confidence">
+            <strong>조건식 생성 완료</strong>
+            <span>근거 일치도 98%</span>
+          </div>
+          <div id="conditionPath" class="condition-path">재무분석 &gt; 성장성분석 &gt; 영업이익증가율</div>
+          <div id="pathWalkthrough" class="path-walkthrough">
+            <div class="path-toolbar">
+              <span id="pathProgress" class="path-progress">조건검색 경로 1 / 1</span>
+              <button id="pathNextButton" class="path-next" type="button" disabled>다음 경로 보기</button>
+            </div>
+            <ul id="conditionTree" class="condition-tree" aria-label="조건검색 경로 트리"></ul>
+            <p id="pathExpression" class="path-expression"></p>
+          </div>
+          <div class="criteria-grid">
+            <div class="criterion"><span>결합 방식</span><strong id="joinType">단일 조건</strong></div>
+            <div class="criterion"><span>조건 개수</span><strong id="conditionCount">1개</strong></div>
+          </div>
+          <p id="answerCopy" class="answer-copy">최근 분기의 영업이익을 직전 분기와 비교해 증가율이 30% 이상인 종목을 찾는 조건입니다.</p>
+          <ul id="combinedConditions" class="combined-list"></ul>
+          <div class="explanation-box">
+            <strong>조건식 설명</strong>
+            <ul id="conditionExplanations" class="explanation-list"></ul>
+          </div>
+          <div class="wiki-source"><strong>Wiki 근거</strong><br><span id="wikiSource">영업이익증가율 정의 · 비교주기 · 입력 허용범위 · 결산기준</span></div>
+          <p id="answerClosing" class="answer-closing">감사합니다.</p>
+          <button id="saveButton" class="primary-button save-button" type="button">내 조건으로 저장</button>
+        </div>
+      </section>
+
+      <section id="manualReviewPanel" class="answer-section" hidden aria-label="확인필요 안내">
+        <p class="step-label"><span class="step-number">2</span> 문의 유형 확인 결과</p>
+        <div class="manual-review-card">
+          <div class="review-alert" role="alert">
+            <span class="review-alert-icon" aria-hidden="true">!</span>
+            <span><strong>확인필요</strong><span>조건검색이 아닌 수식 관련 문의로 확인되었습니다.</span></span>
+          </div>
+          <div class="operator-message">
+            <p>안녕하십니까. 키움증권 운영자입니다.<br>먼저 키움증권에 관심을 가져주시고 이용해주시는 고객님께 감사 인사드립니다.</p>
+            <p>수식관련 문의는 영웅문4나 고객게시판으로 문의해주시기 바랍니다.</p>
+            <p>감사합니다.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="panel-foot">시연용 예시 답변입니다. 실제 서비스에서는 최신 Wiki 문서를 조회합니다.</div>
+  </aside>
+
+  <dialog id="saveDialog" aria-labelledby="saveTitle">
+    <div class="dialog-head"><strong id="saveTitle">내 조건으로 저장</strong></div>
+    <div class="dialog-body">
+      <label for="conditionName">조건명</label>
+      <input id="conditionName" type="text" value="영업이익 증가율 30% 이상" maxlength="40">
+      <p class="dialog-copy">저장하면 영웅문4 [0150] 화면의 내조건 목록에서 바로 사용할 수 있습니다.</p>
+    </div>
+    <div class="dialog-actions">
+      <button id="cancelSave" class="secondary-button" type="button">취소</button>
+      <button id="confirmSave" class="confirm-button" type="button">저장</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="liveRegion" class="sr-only" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const EXAMPLES = {
+        1: {
+          question: "전분기 대비 영업이익 증가율이 30% 이상인 종목",
+          name: "영업이익 증가율 30% 이상",
+          summary: "최근 분기의 영업이익을 직전 분기와 비교해 증가율이 30% 이상인 종목을 찾는 조건입니다.",
+          wiki: "영업이익증가율 정의 · 비교주기 · 입력 허용범위 · 결산기준",
+          explanations: ["최근 분기의 영업이익이 직전 분기보다 30% 이상 증가한 종목을 찾습니다."],
+          paths: [
+            {
+              label: "조건",
+              nodes: ["재무분석", "성장성분석", "영업이익증가율"],
+              expression: "전분기 대비 영업이익 증가율 30% 이상"
+            }
+          ]
+        },
+        2: {
+          question: "A 이동평균선 위치 : 종가가 5일선 위(상단)\nB 거래량 변동 : 전일 거래량 대비 당일 거래량 200%이상 증가\nC 고가대비 종가위치 : [일]당일 고가대비 종가비율 90%이상",
+          name: "이평·거래량·고가대비 종가",
+          summary: "A, B, C 세 조건을 모두 만족하는 종목을 검색합니다. 아래의 ‘다음 경로 보기’를 누르면 조건검색 메뉴 위치를 하나씩 시연할 수 있습니다.",
+          wiki: "가격-이동평균비교 · 거래량비율(n봉) · 기간내 주가위치의 정의와 입력 허용범위",
+          explanations: [
+            "A. 당일 종가가 5일 이동평균선보다 위에 있어 단기 주가 흐름이 5일 평균보다 강한 상태를 뜻합니다.",
+            "B. 당일 거래량이 전일 거래량의 200% 이상으로 증가한 종목을 찾습니다.",
+            "C. 최근 1봉의 가격 변동폭에서 종가가 최저가 기준 90% 이상 높은 위치에 있는 종목을 찾습니다."
+          ],
+          paths: [
+            {
+              label: "A",
+              nodes: ["기술적분석", "주가이동평균", "가격-이동평균비교"],
+              expression: "[일]0봉전 종가5<종가"
+            },
+            {
+              label: "B",
+              nodes: ["시세분석", "거래량/거래대금", "거래량비율(n봉)"],
+              expression: "[일]1봉전대비 0봉전 200%이상"
+            },
+            {
+              label: "C",
+              nodes: ["시세분석", "가격조건", "기간내 주가위치"],
+              expression: "[일]0봉전 1봉이내에서 종가가 (최고가-최저가)변동폭이 최저가대비 90% 이상"
+            }
+          ]
+        },
+        3: {
+          type: "manual-review",
+          question: "a=ma(c,120);\nb=(a+avgif(c-a,-1,0.0) \n-2*stdevif(c-a,-1,0.0));\n\nd=(b*k);\ncrossup(c,d)\n\n유튜브에 강세약세지표 따라 적었는데 수식검증이 안되서 뭐가 문제인지 알려주세요"
+        }
+      };
+      const elements = {
+        askButton: document.getElementById("askButton"),
+        assistantPanel: document.getElementById("assistantPanel"),
+        closePanel: document.getElementById("closePanel"),
+        example1Button: document.getElementById("example1Button"),
+        example2Button: document.getElementById("example2Button"),
+        example3Button: document.getElementById("example3Button"),
+        questionInput: document.getElementById("questionInput"),
+        generateButton: document.getElementById("generateButton"),
+        loadingState: document.getElementById("loadingState"),
+        answerPanel: document.getElementById("answerPanel"),
+        manualReviewPanel: document.getElementById("manualReviewPanel"),
+        conditionPath: document.getElementById("conditionPath"),
+        pathProgress: document.getElementById("pathProgress"),
+        pathNextButton: document.getElementById("pathNextButton"),
+        conditionTree: document.getElementById("conditionTree"),
+        pathExpression: document.getElementById("pathExpression"),
+        joinType: document.getElementById("joinType"),
+        conditionCount: document.getElementById("conditionCount"),
+        answerCopy: document.getElementById("answerCopy"),
+        combinedConditions: document.getElementById("combinedConditions"),
+        conditionExplanations: document.getElementById("conditionExplanations"),
+        wikiSource: document.getElementById("wikiSource"),
+        saveButton: document.getElementById("saveButton"),
+        saveDialog: document.getElementById("saveDialog"),
+        conditionName: document.getElementById("conditionName"),
+        cancelSave: document.getElementById("cancelSave"),
+        confirmSave: document.getElementById("confirmSave"),
+        savedConditionList: document.getElementById("savedConditionList"),
+        resetButton: document.getElementById("resetButton"),
+        screenHint: document.getElementById("screenHint"),
+        toast: document.getElementById("toast"),
+        liveRegion: document.getElementById("liveRegion")
+      };
+
+      let savedConditions = [];
+      let selectedExample = 1;
+      let pathIndex = 0;
+      let generationTimer = null;
+      let toastTimer = null;
+
+      function announce(message) {
+        elements.liveRegion.textContent = "";
+        window.setTimeout(() => { elements.liveRegion.textContent = message; }, 20);
+      }
+
+      function showToast(message, warning = false) {
+        window.clearTimeout(toastTimer);
+        elements.toast.textContent = message;
+        elements.toast.classList.toggle("is-warning", warning);
+        elements.toast.classList.add("is-visible");
+        toastTimer = window.setTimeout(() => elements.toast.classList.remove("is-visible"), 2600);
+      }
+
+      function openAssistant() {
+        document.body.classList.add("panel-open");
+        elements.assistantPanel.classList.add("is-open");
+        elements.assistantPanel.setAttribute("aria-hidden", "false");
+        elements.askButton.setAttribute("aria-expanded", "true");
+        elements.screenHint.hidden = true;
+        window.setTimeout(() => elements.questionInput.focus(), 180);
+        announce("Wiki AI 질문 패널이 열렸습니다.");
+      }
+
+      function closeAssistant() {
+        document.body.classList.remove("panel-open");
+        elements.assistantPanel.classList.remove("is-open");
+        elements.assistantPanel.setAttribute("aria-hidden", "true");
+        elements.askButton.setAttribute("aria-expanded", "false");
+        elements.askButton.focus();
+      }
+
+      function selectExample(number) {
+        selectedExample = number;
+        pathIndex = 0;
+        const example = EXAMPLES[number];
+        elements.example1Button.classList.toggle("is-active", number === 1);
+        elements.example2Button.classList.toggle("is-active", number === 2);
+        elements.example3Button.classList.toggle("is-active", number === 3);
+        elements.questionInput.value = example.question;
+        elements.answerPanel.hidden = true;
+        elements.manualReviewPanel.hidden = true;
+        elements.generateButton.textContent = "Wiki 답변 생성";
+        elements.questionInput.focus();
+        announce(`예시 ${number} 질문을 입력했습니다.`);
+      }
+
+      function renderPath() {
+        const example = EXAMPLES[selectedExample];
+        const path = example.paths[pathIndex];
+        elements.conditionPath.textContent = `${path.label} ${path.nodes.join(" > ")}`;
+        elements.pathProgress.textContent = `조건검색 경로 ${pathIndex + 1} / ${example.paths.length}`;
+        elements.pathExpression.textContent = `${path.nodes.join(">")} : ${path.expression}`;
+        elements.conditionTree.replaceChildren();
+        path.nodes.forEach((node, index) => {
+          const item = document.createElement("li");
+          item.textContent = node;
+          if (index === path.nodes.length - 1) item.classList.add("is-current");
+          elements.conditionTree.appendChild(item);
+        });
+        elements.pathNextButton.disabled = example.paths.length === 1;
+        elements.pathNextButton.textContent = pathIndex === example.paths.length - 1 ? "첫 경로부터 다시 보기" : "다음 경로 보기";
+      }
+
+      function renderAnswer() {
+        const example = EXAMPLES[selectedExample];
+        pathIndex = 0;
+        renderPath();
+        elements.joinType.textContent = example.paths.length > 1 ? "A AND B AND C" : "단일 조건";
+        elements.conditionCount.textContent = `${example.paths.length}개`;
+        elements.answerCopy.textContent = example.summary;
+        elements.wikiSource.textContent = example.wiki;
+        elements.combinedConditions.replaceChildren();
+        example.paths.forEach(path => {
+          const item = document.createElement("li");
+          const label = document.createElement("strong");
+          label.textContent = path.label;
+          item.append(label, document.createTextNode(`${path.nodes.join(">")}:${path.expression}`));
+          elements.combinedConditions.appendChild(item);
+        });
+        elements.conditionExplanations.replaceChildren();
+        example.explanations.forEach(explanation => {
+          const item = document.createElement("li");
+          item.textContent = explanation;
+          elements.conditionExplanations.appendChild(item);
+        });
+      }
+
+      function showNextPath() {
+        const example = EXAMPLES[selectedExample];
+        pathIndex = (pathIndex + 1) % example.paths.length;
+        renderPath();
+        elements.pathWalkthrough?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        announce(`${EXAMPLES[selectedExample].paths[pathIndex].label} 조건검색 경로를 표시했습니다.`);
+      }
+
+      function generateAnswer() {
+        const question = elements.questionInput.value.trim();
+        if (!question) {
+          showToast("질문을 입력해 주세요.", true);
+          elements.questionInput.focus();
+          return;
+        }
+
+        window.clearTimeout(generationTimer);
+        elements.answerPanel.hidden = true;
+        elements.manualReviewPanel.hidden = true;
+        elements.loadingState.classList.add("is-visible");
+        elements.generateButton.disabled = true;
+        elements.generateButton.textContent = "Wiki 확인 중…";
+        announce("Wiki 문서를 확인하고 있습니다.");
+
+        generationTimer = window.setTimeout(() => {
+          elements.loadingState.classList.remove("is-visible");
+          elements.generateButton.disabled = false;
+          elements.generateButton.textContent = "Wiki 답변 다시 생성";
+          if (selectedExample === 3) {
+            elements.answerPanel.hidden = true;
+            elements.manualReviewPanel.hidden = false;
+            elements.manualReviewPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+            announce("수식 관련 문의로 확인이 필요합니다. 문의 안내를 표시했습니다.");
+          } else {
+            renderAnswer();
+            elements.manualReviewPanel.hidden = true;
+            elements.answerPanel.hidden = false;
+            elements.answerPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+            announce("Wiki 기반 조건검색 답변이 생성되었습니다.");
+          }
+        }, 950);
+      }
+
+      function openSaveDialog() {
+        elements.conditionName.value = EXAMPLES[selectedExample].name;
+        elements.saveDialog.showModal();
+        elements.conditionName.select();
+      }
+
+      function closeSaveDialog() {
+        if (elements.saveDialog.open) elements.saveDialog.close();
+        elements.saveButton.focus();
+      }
+
+      function saveCondition() {
+        const name = elements.conditionName.value.trim();
+        if (!name) {
+          showToast("저장할 조건명을 입력해 주세요.", true);
+          elements.conditionName.focus();
+          return;
+        }
+        if (savedConditions.some(savedName => savedName === name)) {
+          elements.saveDialog.close();
+          showToast("같은 이름의 조건이 이미 내조건에 저장되어 있습니다.", true);
+          announce("중복 조건은 추가하지 않았습니다.");
+          return;
+        }
+
+        savedConditions.push(name);
+        const item = document.createElement("div");
+        item.className = "saved-condition";
+        item.textContent = name;
+        elements.savedConditionList.appendChild(item);
+        elements.saveDialog.close();
+        showToast(`‘${name}’ 조건을 내조건에 저장했습니다.`);
+        announce(`${name} 조건이 내조건 목록에 추가되었습니다.`);
+      }
+
+      function resetDemo() {
+        window.clearTimeout(generationTimer);
+        window.clearTimeout(toastTimer);
+        savedConditions = [];
+        selectedExample = 1;
+        pathIndex = 0;
+        elements.questionInput.value = "";
+        elements.loadingState.classList.remove("is-visible");
+        elements.answerPanel.hidden = true;
+        elements.manualReviewPanel.hidden = true;
+        elements.generateButton.disabled = false;
+        elements.generateButton.textContent = "Wiki 답변 생성";
+        elements.savedConditionList.replaceChildren();
+        elements.toast.classList.remove("is-visible", "is-warning");
+        if (elements.saveDialog.open) elements.saveDialog.close();
+        document.body.classList.remove("panel-open");
+        elements.assistantPanel.classList.remove("is-open");
+        elements.assistantPanel.setAttribute("aria-hidden", "true");
+        elements.askButton.setAttribute("aria-expanded", "false");
+        elements.screenHint.hidden = false;
+        elements.example1Button.classList.add("is-active");
+        elements.example2Button.classList.remove("is-active");
+        elements.example3Button.classList.remove("is-active");
+        elements.askButton.focus();
+        announce("시연 화면을 초기화했습니다.");
+      }
+
+      elements.askButton.addEventListener("click", openAssistant);
+      elements.closePanel.addEventListener("click", closeAssistant);
+      elements.example1Button.addEventListener("click", () => selectExample(1));
+      elements.example2Button.addEventListener("click", () => selectExample(2));
+      elements.example3Button.addEventListener("click", () => selectExample(3));
+      elements.generateButton.addEventListener("click", generateAnswer);
+      elements.pathNextButton.addEventListener("click", showNextPath);
+      elements.saveButton.addEventListener("click", openSaveDialog);
+      elements.cancelSave.addEventListener("click", closeSaveDialog);
+      elements.confirmSave.addEventListener("click", saveCondition);
+      elements.resetButton.addEventListener("click", resetDemo);
+      elements.conditionName.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          saveCondition();
+        }
+      });
+      elements.saveDialog.addEventListener("click", event => {
+        const rect = elements.saveDialog.getBoundingClientRect();
+        const outside = event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom;
+        if (outside) closeSaveDialog();
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key !== "Escape") return;
+        if (elements.saveDialog.open) {
+          event.preventDefault();
+          closeSaveDialog();
+        } else if (elements.assistantPanel.classList.contains("is-open")) {
+          closeAssistant();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+
