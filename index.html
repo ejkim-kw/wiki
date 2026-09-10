@@ -288,6 +288,7 @@
       border: 1px solid #f4b6d9;
       border-radius: 8px;
     }
+    .example-button small { display: block; margin-top: 4px; font-size: 12px; font-weight: 400; }
     .example-button:hover { background: #ffe3f2; }
     .example-button.is-active {
       color: #fff;
@@ -645,9 +646,9 @@
       <p class="step-label"><span class="step-number">1</span> 원하는 조건을 자연어로 질문하세요</p>
       <div class="question-card">
         <div class="example-actions" aria-label="예시 질문 선택">
-          <button id="example1Button" class="example-button is-active" type="button">예시 1</button>
-          <button id="example2Button" class="example-button" type="button">예시 2</button>
-          <button id="example3Button" class="example-button" type="button">예시 3</button>
+          <button id="example1Button" class="example-button is-active" type="button">예시 1<small>단일조건</small></button>
+          <button id="example2Button" class="example-button" type="button">예시 2<small>복합조건</small></button>
+          <button id="example3Button" class="example-button" type="button">예시 3<small>답변불가</small></button>
         </div>
         <textarea id="questionInput" class="question-input" aria-label="조건검색 질문" placeholder="예: 전분기 대비 영업이익 증가율이 30% 이상인 종목"></textarea>
         <button id="generateButton" class="primary-button" type="button">Wiki 답변 생성</button>
