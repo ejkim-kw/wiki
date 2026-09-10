@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>영웅문4 조건검색 AI 질문 시연</title>
+  <title>키움증권 | 조건검색 Wiki</title>
+  <meta name="description" content="원하는 조건을 질문하고, Wiki 답변으로 조건검색 경로와 설정 방법을 확인하세요.">
   <style>
     :root {
       --navy: #102b58;
@@ -593,16 +594,95 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     }
+
+    /* 캡처 기반 기본 스타일. 현재 브랜드 색상과 폰트는 brand.css에서 관리합니다. */
+    :root { --brand-navy:#172b50; --brand-magenta:#bc1766; --brand-gray:#74777d;
+      --navy:var(--brand-navy); --navy-2:var(--brand-navy); --pink:var(--brand-magenta);
+      --pink-dark:color-mix(in srgb,var(--brand-magenta) 85%,#000); --ink:var(--brand-navy);
+      --muted:var(--brand-gray); --blue:var(--brand-navy); --green:var(--brand-navy); --line:color-mix(in srgb,var(--brand-gray) 25%,white);
+      --panel-width: min(510px, 42vw); }
+    [hidden] { display:none !important; }
+    body { background:#e8eaed; }
+    .demo-header { background:var(--navy); backdrop-filter:none; }
+    .brand-mark { border-radius:5px; box-shadow:none; }
+    .stage { display:flex; flex-direction:column; justify-content:center; align-items:center; padding:28px 20px; gap:14px; transition:margin-left .25s; }
+    .hts-window { flex-shrink:0; width:min(1100px,100%,calc((100vh - 140px) * 822 / 600)); aspect-ratio:822 / 600; max-height:none; border:1px solid #657386; border-radius:0; box-shadow:0 12px 40px #172b501c; transition:none; }
+    body.panel-open .stage { margin-left:var(--panel-width); }
+    body.panel-open .hts-window { transform:none; }
+    .screen-wrap { inset:0; }
+    .screen-wrap img { width:100%; height:100%; object-fit:contain; }
+    .hts-titlebar { position:absolute; z-index:3; inset:0 0 auto; height:4.4%; padding:0; background:none; border:0; pointer-events:none; }
+    .screen-title,.window-icons { display:none; }
+    .ask-button { position:absolute; right:18%; top:4%; height:90%; min-height:0; padding:0 9px; font-size:clamp(10px,1vw,14px); line-height:1; border-radius:2px; background:var(--pink); box-shadow:none; pointer-events:auto; }
+    .ask-button:hover { transform:none; }
+    .screen-hint { position:static; padding:0; color:var(--muted); background:none; box-shadow:none; font-size:12px; text-align:center; }
+    .screen-hint::before { display:none; }
+    .assistant-panel { left:0; right:auto; width:var(--panel-width); border-left:0; border-right:1px solid var(--line); background:#fff; box-shadow:8px 0 25px #172b5012; transform:translateX(-104%); }
+    .assistant-panel.is-open { transform:translateX(0); }
+    .panel-head { background:#fff; color:var(--navy); border-bottom:1px solid var(--line); min-height:70px; }
+    .panel-title small { color:var(--muted); font-size:12px; }
+    .ai-dot,.confidence { display:none; }
+    .panel-body { padding:22px; }
+    .question-card,.answer-card,.manual-review-card { border-radius:5px; box-shadow:none; }
+    .step-number { border-radius:4px; background:var(--navy); }
+    .question-input { font-size:16px; line-height:1.8; background:#f6f7f8; }
+    .example-button { border-color:var(--line); border-radius:4px; background:#fff; color:var(--navy); }
+    .example-button.is-active { color:var(--pink); background:color-mix(in srgb,var(--pink) 7%,white); border-color:var(--pink); box-shadow:none; }
+    .primary-button { background:var(--navy); border-radius:4px; box-shadow:none; }
+    .primary-button:hover { background:var(--navy); filter:brightness(1.12); }
+    .answer-greeting,.answer-copy,.answer-closing,.operator-message { font-size:16px; line-height:1.9; }
+    .condition-path { text-align:left; width:100%; cursor:pointer; border:1px solid var(--line); background:#f5f6f8; color:var(--navy); font-size:13px; line-height:1.7; border-radius:4px; }
+    .condition-path:hover { border-color:var(--pink); }
+    .path-walkthrough,.explanation-box { background:#f7f8f9; border-color:var(--line); border-radius:4px; }
+    .combined-list li,.explanation-list li { font-size:14px; line-height:1.85; }
+    .combined-list strong { background:var(--navy); }
+    .wiki-source { background:#f6f7f8; border-color:var(--line); color:var(--muted); }
+    .criterion { border-radius:4px; background:#f6f7f8; }
+    .path-open-button { width:100%; margin:12px 0 0; padding:11px; background:#fff; border:1px solid var(--navy); color:var(--navy); border-radius:4px; font-size:14px; cursor:pointer; }
+    .hts-tab { position:absolute; top:4.83%; height:3.6%; padding:0; border:1px solid #92979d; border-radius:0; background:#f5f5f2; color:#555; font-size:clamp(10px,1.03vw,14px); line-height:1; z-index:4; }
+    #htsConditionsTab { left:.85%; width:9.6%; }
+    #htsSavedTab { left:19.8%; width:9.7%; }
+    .hts-tab[aria-selected=true] { background:#e0f0fa; color:#111; font-weight:700; border-bottom-color:#e0f0fa; }
+    .hts-pane { position:absolute; left:.98%; top:12.5%; width:28.2%; height:77.55%; overflow:auto; background:#fff; padding:4px 3px; font-size:clamp(11px,1.05vw,14px); line-height:1.6; color:#222; }
+    .hts-tree details { margin:0; padding:0; }
+    .hts-tree details details { margin-left:9px; border-left:1px dotted #aaa; padding-left:4px; }
+    .hts-tree summary { cursor:pointer; padding:2px 0; font-size:inherit; }
+    .hts-tree button { display:block; width:100%; background:#fff; border:0; padding:3px 2px 3px 9px; text-align:left; color:#222; font-size:inherit; line-height:1.6; }
+    .hts-tree button.is-current { background:#e2edf9; color:#132c51; outline:1px solid #b1c9e3; font-weight:700; }
+    .saved-condition-list { position:static; width:100%; display:grid; gap:3px; }
+    .saved-condition { width:100%; min-height:24px; padding:4px 5px 4px 19px; color:#222; background:#fff; border:0; border-radius:0; box-shadow:none; font-size:inherit; font-weight:400; text-align:left; line-height:1.6; }
+    .saved-condition::before { content:'›'; color:#555; left:6px; }
+    .saved-condition.is-current { background:#e2edf9; outline:1px solid #b1c9e3; color:#132c51; }
+    .hts-empty { padding:15px 6px; color:#777; font-size:inherit; line-height:1.8; }
+    .hts-setup { position:absolute; top:9.2%; left:31.5%; width:67%; height:15.8%; overflow:auto; padding:7px; background:#d4d4d4; color:#222; font-size:clamp(10px,1.03vw,14px); line-height:1.7; }
+    .hts-path-text { font-weight:700; margin:0 0 6px; }
+    .hts-setup-expression { padding:5px 7px; background:#efeee5; border:1px solid #aaa; }
+    .hts-rows { position:absolute; top:28.35%; left:31.6%; width:65.8%; height:15.6%; background:#fff; overflow:auto; color:#222; font-size:clamp(10px,1.03vw,14px); }
+    .hts-row { display:flex; gap:7px; border-bottom:1px solid #ddd; padding:4px 6px; line-height:1.5; }
+    .hts-row strong { flex-shrink:0; }
+    .hts-formula { position:absolute; top:44.8%; left:36.3%; width:45%; height:2.8%; padding:0 4px; background:#efeee5; color:#222; font-size:clamp(9px,1vw,13px); line-height:1.25; overflow:hidden; }
+    @media(max-width:1000px) and (min-width:701px) { :root{--panel-width:44vw} .stage{padding:20px 10px} .panel-body{padding:15px} }
+    @media(max-width:700px) {
+      .demo-header{padding:0 12px}.brand-copy strong{font-size:14px}.brand-mark{display:none}
+      .stage{padding:18px 10px}.hts-window{width:100%;max-height:none}.hts-titlebar{height:4.4%}
+      .screen-wrap{inset:0}.ask-button{height:90%;padding:0 5px;font-size:10px}
+      body.panel-open .stage{margin-left:0;padding-top:50vh}
+      .assistant-panel{top:64px;left:0;right:auto;bottom:auto;width:100%;height:48vh;border-bottom:1px solid var(--line)}
+      .panel-head{min-height:54px;padding:8px 14px}.panel-body{padding:12px 15px}.panel-foot{display:none}
+      .hts-pane{font-size:10px}.hts-tab{font-size:10px}
+    }
+
   </style>
+  <link rel="stylesheet" href="brand.css">
 </head>
 <body>
   <main class="app-shell">
     <header class="demo-header">
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true">K</div>
+        <img class="kiwoom-logo" src="assets/kiwoom-logo.png" alt="키움증권" width="132" height="42">
         <div class="brand-copy">
-          <strong>영웅문4 × Wiki AI</strong>
-          <span>조건검색 질문·답변·저장 시연</span>
+          <strong>조건검색 Wiki</strong>
+          <span>영웅문4 조건검색 도우미</span>
         </div>
       </div>
       <div class="header-actions">
@@ -611,81 +691,84 @@
     </header>
 
     <section class="stage" aria-label="영웅문4 조건검색 시연 화면">
+      <div class="stage-intro"><span>영웅문4 · [0150] 조건검색</span><h1>조건검색, 더 쉽고 간편하게.</h1><p>원하는 조건을 질문하고, 경로 확인부터 내조건식 저장까지 한 번에.</p></div>
       <div class="hts-window">
         <div class="hts-titlebar">
           <span class="screen-title">[0150] 조건검색</span>
           <div class="title-tools">
-            <button id="askButton" class="ask-button" type="button" aria-controls="assistantPanel" aria-expanded="false">
-              <span aria-hidden="true">✦</span> 질문하기
+            <button id="askButton" class="ask-button" type="button" aria-label="질문하기" aria-describedby="screenHint" aria-controls="assistantPanel" aria-expanded="false">
+              질문하기
+              <span id="screenHint" class="screen-hint" role="tooltip">궁금한 조건식을 질문해 보세요</span>
             </button>
             <span class="window-icons" aria-hidden="true">□ — ×</span>
           </div>
         </div>
         <div class="screen-wrap">
           <img src="영4조건검색1.jpg" alt="영웅문4 [0150] 조건검색 화면">
-          <div id="savedConditionList" class="saved-condition-list" aria-live="polite"></div>
+          <div role="tablist" aria-label="캡처 화면 조건검색 탭">
+            <button id="htsConditionsTab" class="hts-tab" role="tab" aria-selected="true" aria-controls="htsConditionsPane" type="button">조건식</button>
+            <button id="htsSavedTab" class="hts-tab" role="tab" aria-selected="false" aria-controls="htsSavedPane" type="button">내조건식</button>
+          </div>
+          <div id="htsConditionsPane" class="hts-pane" role="tabpanel" aria-labelledby="htsConditionsTab"><div id="htsConditionTree" class="hts-tree"></div></div>
+          <div id="htsSavedPane" class="hts-pane" role="tabpanel" aria-labelledby="htsSavedTab" hidden><div id="savedConditionList" class="saved-condition-list" aria-live="polite"></div><div id="htsSavedEmpty" class="hts-empty">저장한 조건이 없습니다.</div></div>
+          <div id="htsSetup" class="hts-setup" hidden><p id="htsPathText" class="hts-path-text"></p><div id="htsSetupExpression" class="hts-setup-expression"></div></div>
+          <div id="htsRows" class="hts-rows" hidden></div>
+          <div id="htsFormula" class="hts-formula" hidden></div>
         </div>
-        <div id="screenHint" class="screen-hint">AI에게 조건식을 질문해 보세요</div>
       </div>
     </section>
   </main>
 
-  <aside id="assistantPanel" class="assistant-panel" aria-hidden="true" aria-label="Wiki AI 질문 패널">
+  <aside id="assistantPanel" class="assistant-panel" aria-hidden="true" aria-label="조건검색 Wiki 오른쪽 질문 패널">
     <div class="panel-head">
       <div class="panel-title">
-        <div class="ai-dot" aria-hidden="true">AI</div>
         <div>
-          <strong>조건검색 Wiki Assistant</strong>
-          <small>영웅문4 조건검색 전용</small>
+          <span class="panel-kicker">조건검색 Wiki</span>
+          <strong>조건검색을 도와드릴게요</strong>
+          <small>예시 질문을 선택하고 답변을 확인하세요.</small>
         </div>
       </div>
       <button id="closePanel" class="icon-button" type="button" aria-label="질문 패널 닫기">×</button>
     </div>
 
     <div class="panel-body">
-      <p class="step-label"><span class="step-number">1</span> 원하는 조건을 자연어로 질문하세요</p>
+      <p class="step-label"><span class="step-number">1</span> 어떤 조건을 찾고 계신가요?</p>
       <div class="question-card">
         <div class="example-actions" aria-label="예시 질문 선택">
           <button id="example1Button" class="example-button is-active" type="button">예시 1<small>단일조건</small></button>
           <button id="example2Button" class="example-button" type="button">예시 2<small>복합조건</small></button>
-          <button id="example3Button" class="example-button" type="button">예시 3<small>답변불가</small></button>
+          <button id="example3Button" class="example-button" type="button">예시 3<small>수식 문의</small></button>
         </div>
-        <textarea id="questionInput" class="question-input" aria-label="조건검색 질문" placeholder="예: 전분기 대비 영업이익 증가율이 30% 이상인 종목"></textarea>
-        <button id="generateButton" class="primary-button" type="button">Wiki 답변 생성</button>
+        <textarea id="questionInput" class="question-input" readonly aria-label="조건검색 질문" placeholder="예: 전분기 대비 영업이익 증가율이 30% 이상인 종목"></textarea>
+        <button id="generateButton" class="primary-button" type="button">답변 확인하기</button>
       </div>
 
       <div id="loadingState" class="loading" role="status">
-        HTS Wiki에서 조건 정의와 입력 범위를 확인하고 있습니다
+        선택한 예시의 답변을 불러오고 있어요.
         <span class="loading-dots" aria-hidden="true"><i></i><i></i><i></i></span>
       </div>
 
       <section id="answerPanel" class="answer-section" hidden aria-label="Wiki 기반 답변">
-        <p class="step-label"><span class="step-number">2</span> Wiki 기반 답변</p>
+        <p class="step-label"><span class="step-number">2</span> 조건 설정 방법을 확인하세요</p>
         <div class="answer-card">
           <p id="answerGreeting" class="answer-greeting">안녕하십니까. 키움증권 운영자입니다.<br>먼저 키움증권에 관심을 가져주시고 이용해주시는 고객님께 감사 인사드립니다.</p>
-          <div class="confidence">
-            <strong>조건식 생성 완료</strong>
-            <span>근거 일치도 98%</span>
+          <div class="criteria-grid">
+            <div class="criterion"><span>조건식</span><strong id="joinType">A</strong></div>
+            <div class="criterion"><span>조건 개수</span><strong id="conditionCount">1개</strong></div>
           </div>
-          <div id="conditionPath" class="condition-path">재무분석 &gt; 성장성분석 &gt; 영업이익증가율</div>
+          <div id="conditionPath" class="condition-path-list" role="group" aria-label="검색된 조건 경로"></div>
           <div id="pathWalkthrough" class="path-walkthrough">
             <div class="path-toolbar">
-              <span id="pathProgress" class="path-progress">조건검색 경로 1 / 1</span>
-              <button id="pathNextButton" class="path-next" type="button" disabled>다음 경로 보기</button>
+              <span id="pathProgress" class="path-progress" tabindex="-1" role="status">A 조건경로 1/1</span>
+              <div class="path-controls">
+                <button id="previousCondition" class="path-arrow" type="button" aria-label="이전 조건" hidden>←</button>
+                <button id="nextCondition" class="path-arrow" type="button" aria-label="다음 조건" hidden>→</button>
+              </div>
             </div>
             <ul id="conditionTree" class="condition-tree" aria-label="조건검색 경로 트리"></ul>
-            <p id="pathExpression" class="path-expression"></p>
-          </div>
-          <div class="criteria-grid">
-            <div class="criterion"><span>결합 방식</span><strong id="joinType">단일 조건</strong></div>
-            <div class="criterion"><span>조건 개수</span><strong id="conditionCount">1개</strong></div>
           </div>
           <p id="answerCopy" class="answer-copy">최근 분기의 영업이익을 직전 분기와 비교해 증가율이 30% 이상인 종목을 찾는 조건입니다.</p>
           <ul id="combinedConditions" class="combined-list"></ul>
-          <div class="explanation-box">
-            <strong>조건식 설명</strong>
-            <ul id="conditionExplanations" class="explanation-list"></ul>
-          </div>
           <div class="wiki-source"><strong>Wiki 근거</strong><br><span id="wikiSource">영업이익증가율 정의 · 비교주기 · 입력 허용범위 · 결산기준</span></div>
           <p id="answerClosing" class="answer-closing">감사합니다.</p>
           <button id="saveButton" class="primary-button save-button" type="button">내 조건으로 저장</button>
@@ -707,7 +790,7 @@
         </div>
       </section>
     </div>
-    <div class="panel-foot">시연용 예시 답변입니다. 실제 서비스에서는 최신 Wiki 문서를 조회합니다.</div>
+    <div class="panel-foot">예시 답변으로 조건검색 경로 확인과 내조건식 저장을 체험할 수 있어요.</div>
   </aside>
 
   <dialog id="saveDialog" aria-labelledby="saveTitle">
@@ -715,7 +798,7 @@
     <div class="dialog-body">
       <label for="conditionName">조건명</label>
       <input id="conditionName" type="text" value="영업이익 증가율 30% 이상" maxlength="40">
-      <p class="dialog-copy">저장하면 영웅문4 [0150] 화면의 내조건 목록에서 바로 사용할 수 있습니다.</p>
+      <p class="dialog-copy">저장하면 캡처 화면의 [내조건식] 탭에 추가됩니다.</p>
     </div>
     <div class="dialog-actions">
       <button id="cancelSave" class="secondary-button" type="button">취소</button>
@@ -737,7 +820,7 @@
           explanations: ["최근 분기의 영업이익이 직전 분기보다 30% 이상 증가한 종목을 찾습니다."],
           paths: [
             {
-              label: "조건",
+              label: "A",
               nodes: ["재무분석", "성장성분석", "영업이익증가율"],
               expression: "전분기 대비 영업이익 증가율 30% 이상"
             }
@@ -746,7 +829,7 @@
         2: {
           question: "A 이동평균선 위치 : 종가가 5일선 위(상단)\nB 거래량 변동 : 전일 거래량 대비 당일 거래량 200%이상 증가\nC 고가대비 종가위치 : [일]당일 고가대비 종가비율 90%이상",
           name: "이평·거래량·고가대비 종가",
-          summary: "A, B, C 세 조건을 모두 만족하는 종목을 검색합니다. 아래의 ‘다음 경로 보기’를 누르면 조건검색 메뉴 위치를 하나씩 시연할 수 있습니다.",
+          summary: "A, B, C 세 조건을 모두 만족하는 종목을 검색합니다.",
           wiki: "가격-이동평균비교 · 거래량비율(n봉) · 기간내 주가위치의 정의와 입력 허용범위",
           explanations: [
             "A. 당일 종가가 5일 이동평균선보다 위에 있어 단기 주가 흐름이 5일 평균보다 강한 상태를 뜻합니다.",
@@ -790,14 +873,13 @@
         manualReviewPanel: document.getElementById("manualReviewPanel"),
         conditionPath: document.getElementById("conditionPath"),
         pathProgress: document.getElementById("pathProgress"),
-        pathNextButton: document.getElementById("pathNextButton"),
         conditionTree: document.getElementById("conditionTree"),
-        pathExpression: document.getElementById("pathExpression"),
+        previousCondition: document.getElementById("previousCondition"),
+        nextCondition: document.getElementById("nextCondition"),
         joinType: document.getElementById("joinType"),
         conditionCount: document.getElementById("conditionCount"),
         answerCopy: document.getElementById("answerCopy"),
         combinedConditions: document.getElementById("combinedConditions"),
-        conditionExplanations: document.getElementById("conditionExplanations"),
         wikiSource: document.getElementById("wikiSource"),
         saveButton: document.getElementById("saveButton"),
         saveDialog: document.getElementById("saveDialog"),
@@ -812,6 +894,9 @@
       };
 
       let savedConditions = [];
+      let savedConditionRecords = [];
+      let htsTab = "conditions";
+      let htsSelection = null;
       let selectedExample = 1;
       let pathIndex = 0;
       let generationTimer = null;
@@ -837,7 +922,7 @@
         elements.askButton.setAttribute("aria-expanded", "true");
         elements.screenHint.hidden = true;
         window.setTimeout(() => elements.questionInput.focus(), 180);
-        announce("Wiki AI 질문 패널이 열렸습니다.");
+        announce("오른쪽 Wiki 질문 패널이 열렸습니다.");
       }
 
       function closeAssistant() {
@@ -849,6 +934,9 @@
       }
 
       function selectExample(number) {
+        window.clearTimeout(generationTimer);
+        elements.loadingState.classList.remove("is-visible");
+        elements.generateButton.disabled = false;
         selectedExample = number;
         pathIndex = 0;
         const example = EXAMPLES[number];
@@ -858,7 +946,7 @@
         elements.questionInput.value = example.question;
         elements.answerPanel.hidden = true;
         elements.manualReviewPanel.hidden = true;
-        elements.generateButton.textContent = "Wiki 답변 생성";
+        elements.generateButton.textContent = "답변 확인하기";
         elements.questionInput.focus();
         announce(`예시 ${number} 질문을 입력했습니다.`);
       }
@@ -866,9 +954,16 @@
       function renderPath() {
         const example = EXAMPLES[selectedExample];
         const path = example.paths[pathIndex];
-        elements.conditionPath.textContent = `${path.label} ${path.nodes.join(" > ")}`;
-        elements.pathProgress.textContent = `조건검색 경로 ${pathIndex + 1} / ${example.paths.length}`;
-        elements.pathExpression.textContent = `${path.nodes.join(">")} : ${path.expression}`;
+        for (let i = 0; i < elements.conditionPath.children.length; i++) {
+          const card = elements.conditionPath.children[i];
+          const active = i === pathIndex;
+          card.classList.toggle("is-active", active);
+          card.setAttribute("aria-pressed", active);
+        }
+        for (let i = 0; i < elements.combinedConditions.children.length; i++) {
+          elements.combinedConditions.children[i].classList.toggle("is-active", i === pathIndex);
+        }
+        elements.pathProgress.textContent = `${path.label} 조건경로 ${pathIndex + 1}/${example.paths.length}`;
         elements.conditionTree.replaceChildren();
         path.nodes.forEach((node, index) => {
           const item = document.createElement("li");
@@ -876,40 +971,59 @@
           if (index === path.nodes.length - 1) item.classList.add("is-current");
           elements.conditionTree.appendChild(item);
         });
-        elements.pathNextButton.disabled = example.paths.length === 1;
-        elements.pathNextButton.textContent = pathIndex === example.paths.length - 1 ? "첫 경로부터 다시 보기" : "다음 경로 보기";
+        elements.previousCondition.hidden = pathIndex === 0;
+        elements.nextCondition.hidden = pathIndex === example.paths.length - 1;
+      }
+
+      function selectPath(index) {
+        if (!Number.isInteger(index) || !EXAMPLES[selectedExample]?.paths?.[index]) return;
+        pathIndex = index;
+        renderPath();
+        showHtsPath();
       }
 
       function renderAnswer() {
         const example = EXAMPLES[selectedExample];
         pathIndex = 0;
-        renderPath();
-        elements.joinType.textContent = example.paths.length > 1 ? "A AND B AND C" : "단일 조건";
+        elements.conditionPath.replaceChildren();
+        example.paths.forEach((path, index) => {
+          const card = document.createElement("button");
+          card.type = "button";
+          card.className = "condition-route-card";
+          card.setAttribute("aria-label", `${path.label} ${path.nodes.join(" > ")} 선택`);
+          const label = document.createElement("strong");
+          label.className = "route-card-label";
+          label.textContent = path.label;
+          const pathText = document.createElement("span");
+          pathText.className = "route-card-text";
+          pathText.textContent = path.nodes.join(" > ");
+          card.append(label, pathText);
+          card.addEventListener("click", () => selectPath(index));
+          elements.conditionPath.appendChild(card);
+        });
+        elements.joinType.textContent = example.paths.map(path => path.label).join(" AND ");
         elements.conditionCount.textContent = `${example.paths.length}개`;
         elements.answerCopy.textContent = example.summary;
         elements.wikiSource.textContent = example.wiki;
         elements.combinedConditions.replaceChildren();
-        example.paths.forEach(path => {
+        example.paths.forEach((path, index) => {
           const item = document.createElement("li");
+          item.className = "condition-detail-card";
+          const heading = document.createElement("h3");
           const label = document.createElement("strong");
           label.textContent = path.label;
-          item.append(label, document.createTextNode(`${path.nodes.join(">")}:${path.expression}`));
+          label.className = "detail-card-label";
+          heading.append(label, document.createTextNode(path.nodes[2]));
+          const expression = document.createElement("p");
+          expression.className = "detail-expression";
+          expression.textContent = path.expression;
+          const description = document.createElement("p");
+          description.className = "detail-description";
+          description.textContent = example.paths.length === 1 ? `${path.label}. ${example.explanations[index]}` : example.explanations[index];
+          item.append(heading, expression, description);
           elements.combinedConditions.appendChild(item);
         });
-        elements.conditionExplanations.replaceChildren();
-        example.explanations.forEach(explanation => {
-          const item = document.createElement("li");
-          item.textContent = explanation;
-          elements.conditionExplanations.appendChild(item);
-        });
-      }
-
-      function showNextPath() {
-        const example = EXAMPLES[selectedExample];
-        pathIndex = (pathIndex + 1) % example.paths.length;
         renderPath();
-        elements.pathWalkthrough?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        announce(`${EXAMPLES[selectedExample].paths[pathIndex].label} 조건검색 경로를 표시했습니다.`);
       }
 
       function generateAnswer() {
@@ -925,13 +1039,13 @@
         elements.manualReviewPanel.hidden = true;
         elements.loadingState.classList.add("is-visible");
         elements.generateButton.disabled = true;
-        elements.generateButton.textContent = "Wiki 확인 중…";
-        announce("Wiki 문서를 확인하고 있습니다.");
+        elements.generateButton.textContent = "답변 불러오는 중…";
+        announce("선택한 예시 답변을 불러오고 있습니다.");
 
         generationTimer = window.setTimeout(() => {
           elements.loadingState.classList.remove("is-visible");
           elements.generateButton.disabled = false;
-          elements.generateButton.textContent = "Wiki 답변 다시 생성";
+          elements.generateButton.textContent = "답변 다시 확인하기";
           if (selectedExample === 3) {
             elements.answerPanel.hidden = true;
             elements.manualReviewPanel.hidden = false;
@@ -973,10 +1087,23 @@
         }
 
         savedConditions.push(name);
-        const item = document.createElement("div");
+        const record = { name, example: selectedExample };
+        savedConditionRecords.push(record);
+        const item = document.createElement("button");
+        item.type = "button";
         item.className = "saved-condition";
+        item.addEventListener("click", () => {
+          htsSelection = { example: record.example, index: 0 };
+          renderHtsRows(record.example);
+          document.getElementById("htsSetup").hidden = false;
+          document.getElementById("htsPathText").textContent = `[0150] 조건검색 > 내조건식 > ${record.name}`;
+          document.getElementById("htsSetupExpression").textContent = EXAMPLES[record.example].paths.map(p => p.expression).join(" AND ");
+          for (const child of elements.savedConditionList.children) child.classList.toggle("is-current", child === item);
+          switchHtsTab("saved");
+        });
         item.textContent = name;
         elements.savedConditionList.appendChild(item);
+        item.click();
         elements.saveDialog.close();
         showToast(`‘${name}’ 조건을 내조건에 저장했습니다.`);
         announce(`${name} 조건이 내조건 목록에 추가되었습니다.`);
@@ -986,14 +1113,16 @@
         window.clearTimeout(generationTimer);
         window.clearTimeout(toastTimer);
         savedConditions = [];
+        savedConditionRecords = [];
+        htsSelection = null;
         selectedExample = 1;
         pathIndex = 0;
-        elements.questionInput.value = "";
+        elements.questionInput.value = EXAMPLES[1].question;
         elements.loadingState.classList.remove("is-visible");
         elements.answerPanel.hidden = true;
         elements.manualReviewPanel.hidden = true;
         elements.generateButton.disabled = false;
-        elements.generateButton.textContent = "Wiki 답변 생성";
+        elements.generateButton.textContent = "답변 확인하기";
         elements.savedConditionList.replaceChildren();
         elements.toast.classList.remove("is-visible", "is-warning");
         if (elements.saveDialog.open) elements.saveDialog.close();
@@ -1006,8 +1135,101 @@
         elements.example2Button.classList.remove("is-active");
         elements.example3Button.classList.remove("is-active");
         elements.askButton.focus();
+        document.getElementById("htsSetup").hidden = true;
+        document.getElementById("htsRows").hidden = true;
+        document.getElementById("htsFormula").hidden = true;
+        renderHtsTree();
+        switchHtsTab("conditions");
         announce("시연 화면을 초기화했습니다.");
       }
+
+
+      function switchHtsTab(tab) {
+        htsTab = tab;
+        const saved = tab === "saved";
+        document.getElementById("htsConditionsTab").setAttribute("aria-selected", !saved);
+        document.getElementById("htsSavedTab").setAttribute("aria-selected", saved);
+        document.getElementById("htsConditionsPane").hidden = saved;
+        document.getElementById("htsSavedPane").hidden = !saved;
+        document.getElementById("htsSavedEmpty").hidden = savedConditions.length > 0;
+      }
+      function renderHtsRows(exampleNumber) {
+        const example = EXAMPLES[exampleNumber];
+        const rows = document.getElementById("htsRows");
+        rows.replaceChildren();
+        example.paths.forEach((path, i) => {
+          const row = document.createElement("div"); row.className = "hts-row";
+          const letter = document.createElement("strong"); letter.textContent = String.fromCharCode(65+i);
+          const text = document.createElement("span"); text.textContent = path.nodes[2] + ": " + path.expression;
+          row.append(letter, text); rows.appendChild(row);
+        });
+        rows.hidden = false;
+        document.getElementById("htsFormula").hidden = false;
+        document.getElementById("htsFormula").textContent = example.paths.map((_,i)=>String.fromCharCode(65+i)).join(" and ");
+      }
+      function showHtsPath(exampleNumber = selectedExample, index = pathIndex) {
+        const path = EXAMPLES[exampleNumber]?.paths?.[index];
+        if (!path) return;
+        if (exampleNumber === selectedExample && !elements.answerPanel.hidden) {
+          pathIndex = index;
+          renderPath();
+        }
+        htsSelection = { example: exampleNumber, index };
+        switchHtsTab("conditions"); renderHtsTree(); renderHtsRows(exampleNumber);
+        document.getElementById("htsSetup").hidden = false;
+        document.getElementById("htsPathText").textContent = "[0150] 조건검색 > 조건식 > " + path.nodes.join(" > ");
+        document.getElementById("htsSetupExpression").textContent = path.expression;
+        announce("조건식 탭에서 " + path.nodes.join(" > ") + " 경로를 표시했습니다.");
+      }
+      function renderHtsTree() {
+        const tree = document.getElementById("htsConditionTree"); tree.replaceChildren();
+        const groups = {};
+        [1,2].forEach(number => EXAMPLES[number].paths.forEach((path,index) => {
+          const [root,branch] = path.nodes;
+          if (!groups[root]) groups[root] = {};
+          if (!groups[root][branch]) groups[root][branch] = [];
+          groups[root][branch].push({number,index,path});
+        }));
+        Object.entries(groups).forEach(([root,branches]) => {
+          const group = document.createElement("details");
+          group.open = !!htsSelection && EXAMPLES[htsSelection.example].paths[htsSelection.index].nodes[0] === root;
+          const title = document.createElement("summary"); title.textContent = root; group.appendChild(title);
+          Object.entries(branches).forEach(([branch,paths]) => {
+            const subgroup = document.createElement("details"); subgroup.open = group.open;
+            const subtitle = document.createElement("summary"); subtitle.textContent = branch; subgroup.appendChild(subtitle);
+            paths.forEach(({number,index,path}) => {
+              const leaf = document.createElement("button"); leaf.type = "button"; leaf.textContent = path.nodes[2];
+              if (htsSelection?.example === number && htsSelection?.index === index) { leaf.className = "is-current"; leaf.setAttribute("aria-current", "true"); }
+              leaf.addEventListener("click", () => showHtsPath(number,index)); subgroup.appendChild(leaf);
+            });
+            group.appendChild(subgroup);
+          }); tree.appendChild(group);
+        });
+      }
+      document.getElementById("htsConditionsTab").addEventListener("click", () => {
+        if (htsSelection) showHtsPath(htsSelection.example, htsSelection.index);
+        else switchHtsTab("conditions");
+      });
+      document.getElementById("htsSavedTab").addEventListener("click", () => {
+        switchHtsTab("saved");
+        if (elements.savedConditionList.children.length) elements.savedConditionList.children[elements.savedConditionList.children.length - 1].click();
+        else { document.getElementById("htsSetup").hidden = true; document.getElementById("htsRows").hidden = true; document.getElementById("htsFormula").hidden = true; }
+      });
+      ["htsConditionsTab","htsSavedTab"].forEach((id,i) => {
+        document.getElementById(id).addEventListener("keydown", event => {
+          if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+          event.preventDefault(); const other = document.getElementById(i ? "htsConditionsTab" : "htsSavedTab"); other.click(); other.focus();
+        });
+      });
+      elements.previousCondition.addEventListener("click", () => {
+        selectPath(pathIndex - 1);
+        if (elements.previousCondition.hidden) elements.pathProgress.focus();
+      });
+      elements.nextCondition.addEventListener("click", () => {
+        selectPath(pathIndex + 1);
+        if (elements.nextCondition.hidden) elements.pathProgress.focus();
+      });
+      renderHtsTree(); switchHtsTab("conditions"); selectExample(1);
 
       elements.askButton.addEventListener("click", openAssistant);
       elements.closePanel.addEventListener("click", closeAssistant);
@@ -1015,7 +1237,6 @@
       elements.example2Button.addEventListener("click", () => selectExample(2));
       elements.example3Button.addEventListener("click", () => selectExample(3));
       elements.generateButton.addEventListener("click", generateAnswer);
-      elements.pathNextButton.addEventListener("click", showNextPath);
       elements.saveButton.addEventListener("click", openSaveDialog);
       elements.cancelSave.addEventListener("click", closeSaveDialog);
       elements.confirmSave.addEventListener("click", saveCondition);
